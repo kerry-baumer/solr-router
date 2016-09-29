@@ -1,0 +1,60 @@
+<!--
+XML schema corresponding to a row in the SUD_USER_WORKSPACE_MONITOR table:
+		PK_USER_WORKSPACE_MONITOR                 NOT NULL NUMBER(38)
+		SUMMARY_ID                                NOT NULL VARCHAR2(32)
+		REPORT_TYPE                                        VARCHAR2(25)
+		STATUS                                    NOT NULL CHAR(1)
+		IS_LEGACY                                 NOT NULL NUMBER(38)
+		ACTION                                    NOT NULL CHAR(1)
+		CREATED                                            TIMESTAMP(6)
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://mil.navy.safecen/solr"
+    xmlns:nsc="http://mil.navy.safecen/solr" elementFormDefault="qualified">
+	<xs:element name="monitor_record">
+		<xs:complexType>
+			<xs:sequence >
+				<xs:element ref="nsc:summary_id" />
+				<xs:element ref="nsc:report_type" />
+				<xs:element ref="nsc:status" />
+				<xs:element ref="nsc:action" />
+				<xs:element ref="nsc:created" />
+			</xs:sequence>
+			<xs:attribute name="record_id" type="xs:string" use="required"/>
+			<xs:attribute name="is_legacy" type="xs:boolean" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="summary_id" type="xs:string" nillable="false"/>
+	<xs:element name="report_type" type="nsc:ReportTypeType" nillable="false" />
+	<xs:element name="status" type="nsc:StatusType" nillable="false" />
+	<xs:element name="action" type="xs:string" nillable="false" />
+	<xs:element name="created" type="xs:dateTime" nillable="false" />
+
+
+	<!-- definition of attributes -->
+	<xs:simpleType name="StatusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="P" />	<!-- Pending -->
+			<xs:enumeration value="W" />	<!-- Working -->
+			<xs:enumeration value="D" />	<!-- Done -->
+			<xs:enumeration value="E" />	<!-- Error -->
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="ReportTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="AVIATION_MISHAP" />
+			<xs:enumeration value="AVIATION_HAZARD" />
+			<xs:enumeration value="AV_INITIAL_NOTIFICATION" />
+			<xs:enumeration value="CN_INITIAL_NOTIFICATION" />
+			<xs:enumeration value="CN_HAZARD" />
+			<xs:enumeration value="MV_MISHAP" />
+			<xs:enumeration value="AFLOAT_MISHAP" />
+			<xs:enumeration value="AFLOAT_HAZARD" />
+			<xs:enumeration value="ROD_MISHAP" />
+			<xs:enumeration value="ROD_HAZARD" />
+			<xs:enumeration value="SHORE_MISHAP" />
+			<xs:enumeration value="SHORE_HAZARD" />
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

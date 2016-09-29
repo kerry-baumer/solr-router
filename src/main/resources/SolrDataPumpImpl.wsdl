@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://pump.solr.pegasus.safecen.navy.mil/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" name="SolrDataPumpImplService" targetNamespace="http://pump.solr.pegasus.safecen.navy.mil/">
+  <wsdl:types>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://pump.solr.pegasus.safecen.navy.mil/" xmlns:ns1="http://mil.navy.safecen/solr" elementFormDefault="unqualified" targetNamespace="http://pump.solr.pegasus.safecen.navy.mil/" version="1.0">
+
+  <xs:import namespace="http://mil.navy.safecen/solr"/>
+
+  <xs:element name="pumpData" type="tns:pumpData"/>
+
+  <xs:element name="pumpData2" type="tns:pumpData2"/>
+
+  <xs:element name="pumpData2Response" type="tns:pumpData2Response"/>
+
+  <xs:element name="pumpDataResponse" type="tns:pumpDataResponse"/>
+
+  <xs:complexType name="pumpData2">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element form="qualified" name="summary_id" type="xs:string"/>
+            <xs:element form="qualified" name="report_type" type="xs:string"/>
+            <xs:element form="qualified" name="status" type="xs:string"/>
+            <xs:element form="qualified" name="action" type="xs:string"/>
+            <xs:element form="qualified" name="created" type="xs:dateTime"/>
+          </xs:sequence>
+          <xs:attribute name="record_id" type="xs:string" use="required"/>
+          <xs:attribute name="is_legacy" type="xs:boolean" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pumpData2Response">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pumpData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:MonitorRecordBean"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="MonitorRecordBean">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="summaryId" type="xs:string"/>
+      <xs:element minOccurs="0" name="reportType" type="xs:string"/>
+      <xs:element minOccurs="0" name="status" type="xs:string"/>
+      <xs:element minOccurs="0" name="action" type="xs:string"/>
+      <xs:element minOccurs="0" name="created" type="xs:anySimpleType"/>
+      <xs:element minOccurs="0" name="recordId" type="xs:string"/>
+      <xs:element name="isLegacy" type="xs:boolean"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pumpDataResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://mil.navy.safecen/solr" elementFormDefault="qualified" targetNamespace="http://mil.navy.safecen/solr" version="1.0">
+
+  <xs:element name="action" type="xs:string"/>
+
+  <xs:element name="created" type="xs:anySimpleType"/>
+
+  <xs:element name="monitor_record">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="summary_id" type="xs:string"/>
+        <xs:element name="report_type" type="xs:string"/>
+        <xs:element name="status" type="xs:string"/>
+        <xs:element name="action" type="xs:string"/>
+        <xs:element name="created" type="xs:dateTime"/>
+      </xs:sequence>
+      <xs:attribute name="record_id" type="xs:string" use="required"/>
+      <xs:attribute name="is_legacy" type="xs:boolean" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="report_type" type="tns:ReportTypeType"/>
+
+  <xs:element name="status" type="tns:StatusType"/>
+
+  <xs:element name="summary_id" type="xs:string"/>
+
+  <xs:simpleType name="ReportTypeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AVIATION_MISHAP"/>
+      <xs:enumeration value="AVIATION_HAZARD"/>
+      <xs:enumeration value="AV_INITIAL_NOTIFICATION"/>
+      <xs:enumeration value="CN_INITIAL_NOTIFICATION"/>
+      <xs:enumeration value="CN_HAZARD"/>
+      <xs:enumeration value="MV_MISHAP"/>
+      <xs:enumeration value="AFLOAT_MISHAP"/>
+      <xs:enumeration value="AFLOAT_HAZARD"/>
+      <xs:enumeration value="ROD_MISHAP"/>
+      <xs:enumeration value="ROD_HAZARD"/>
+      <xs:enumeration value="SHORE_MISHAP"/>
+      <xs:enumeration value="SHORE_HAZARD"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="StatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="P"/>
+      <xs:enumeration value="W"/>
+      <xs:enumeration value="D"/>
+      <xs:enumeration value="E"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="pumpData2Response">
+    <wsdl:part element="tns:pumpData2Response" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pumpData">
+    <wsdl:part element="tns:pumpData" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pumpDataResponse">
+    <wsdl:part element="tns:pumpDataResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pumpData2">
+    <wsdl:part element="tns:pumpData2" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="SolrDataPump">
+    <wsdl:operation name="pumpData2">
+      <wsdl:input message="tns:pumpData2" name="pumpData2">
+    </wsdl:input>
+      <wsdl:output message="tns:pumpData2Response" name="pumpData2Response">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="pumpData">
+      <wsdl:input message="tns:pumpData" name="pumpData">
+    </wsdl:input>
+      <wsdl:output message="tns:pumpDataResponse" name="pumpDataResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SolrDataPumpImplServiceSoapBinding" type="tns:SolrDataPump">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="pumpData2">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="pumpData2">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="pumpData2Response">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="pumpData">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="pumpData">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="pumpDataResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SolrDataPumpImplService">
+    <wsdl:port binding="tns:SolrDataPumpImplServiceSoapBinding" name="SolrDataPumpImplPort">
+      <soap:address location="http://niflheim:8080/pegasus-solr-pump/SolrDataPumpImpl"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

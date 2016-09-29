@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+    <!--
+        Simple camel route which send every one minute a message on the console.
+    -->
+    <!-- define the gson data format, where we configure the data format using the properties -->
+    <bean
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource" id="myTargetDataSource">
+        <property name="driverClassName" value="oracle.jdbc.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@//niflheim:1521/orcl"/>
+        <property name="username" value="sc53kwb"/>
+        <property name="password" value="SSC53_mar21_kwb"/>
+    </bean>
+    <!-- 
+    <bean class="org.springframework.jndi.JndiObjectFactoryBean" id="myTargetDataSource">
+        <property name="jndiName" value="{{mil.navy.safecen.solr.router.dsName}}"/>
+    </bean>
+     -->
+    <bean class="mil.navy.safecen.solr.router.RowProcessor" id="rowProcessor"/>
+    <bean class="mil.navy.safecen.solr.router.SolrAddDocProcessor" id="docAddProcessor">
+    	<property name="clusterLookup" ref="clusterLookup" />
+    </bean>
+    <bean class="mil.navy.safecen.solr.router.SolrDelDocProcessor" id="docDelProcessor"/>
+    <bean class="org.apache.cxf.jaxrs.provider.json.JSONProvider" id="jsonProvider"/>
+    
+    <bean class="mil.navy.safecen.solr.router.lookup.ClusterLookup" id="clusterLookup">
+    	<property name="dataSource" ref="myTargetDataSource" />
+    </bean>
+
+    <!-- Define the client endpoint to create the aviation cxf-rs consumer -->
+    <cxf:rsClient address="http://{{CXFTestSupport.port1}}/altidx"
+        id="rsClientAV" loggingFeatureEnabled="false" serviceClass="mil.navy.safecen.pegasus.solr.pump.SolrPumpResource">
+        <cxf:providers>
+            <ref bean="jsonProvider"/>
+        </cxf:providers>
+    </cxf:rsClient>
+    <!-- Define the client endpoint to create the consolidated cxf-rs consumer -->
+    <cxf:rsClient address="http://{{CXFTestSupport.port2}}/altidx"
+        id="rsClientCN" loggingFeatureEnabled="false" serviceClass="mil.navy.safecen.pegasus.solr.pump.SolrPumpResource">
+        <cxf:providers>
+            <ref bean="jsonProvider"/>
+        </cxf:providers>
+    </cxf:rsClient>
+    <!-- Define the client endpoint to create the consolidated legacy cxf-rs consumer -->
+    <cxf:rsClient address="http://{{CXFTestSupport.port2}}/legacyidx"
+        id="rsClientCNLegacy" loggingFeatureEnabled="false" serviceClass="mil.navy.safecen.pegasus.solr.pump.SolrPumpResource">
+        <cxf:providers>
+            <ref bean="jsonProvider"/>
+        </cxf:providers>
+    </cxf:rsClient>
+    <!-- Define the client endpoint to create the solr cxf-rs consumer -->
+    <cxf:rsClient
+        address="http://{{solr.pump.baseUrl}}/{{solr.pump.svcIdx}}/update"
+        id="rsSolrClient" loggingFeatureEnabled="false"/>
+    <camelContext id="camelContext-72b9a210-7450-4dcf-b09b-e92af63d4af6" xmlns="http://camel.apache.org/schema/spring">
+        <onException>
+            <exception>java.lang.Exception</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <setBody id="_setBody1">
+                <constant>UPDATE SUD_USER_WORKSPACE_MONITOR SET status = 'E' where PK_USER_WORKSPACE_MONITOR = :?record_id</constant>
+            </setBody>
+            <to id="_jdbc1" uri="jdbc:myTargetDataSource?useHeadersAsParameters=true"/>
+        </onException>
+        <route id="solr-router">
+            <from id="_from1" uri="timer://foo?fixedRate=true&amp;period=10000"/>
+            <setBody id="_setBody2">
+                <constant>select * from SUD_USER_WORKSPACE_MONITOR where status = 'P'</constant>
+            </setBody>
+            <to id="_jdbc2" uri="jdbc:myTargetDataSource"/>
+            <split id="_split1">
+                <simple>${body}</simple>
+                <to id="_to2" uri="bean:rowProcessor"/>
+                <choice id="_choice2">
+                    <when id="_when1">
+                        <simple>${headers.report_action} == 'A'</simple>
+                        <choice id="_choice2">
+                            <when id="_when1">
+                                <simple>${headers.report_type} == 'AVIATION_MISHAP'</simple>
+                                <setHeader headerName="CamelHttpMethod" id="_setHeader1">
+                                    <constant>GET</constant>
+                                </setHeader>
+                                <setHeader headerName="CamelHttpQuery" id="_setHeader2">
+                                    <simple>report_id=${headers.report_id}&amp;record_type=${headers.report_type}</simple>
+                                </setHeader>
+                                <inOut id="_to3" uri="cxfrs://bean://rsClientAV"/>
+                            </when>
+                            <when id="_when2">
+                                <simple>${headers.report_type} == 'AVIATION_HAZARD'</simple>
+                                <setHeader headerName="CamelHttpMethod" id="_setHeader3">
+                                    <constant>GET</constant>
+                                </setHeader>
+                                <setHeader headerName="CamelHttpQuery" id="_setHeader4">
+                                    <simple>report_id=${headers.report_id}&amp;record_type=${headers.report_type}</simple>
+                                </setHeader>
+                                <inOut id="_to3" uri="cxfrs://bean://rsClientAV"/>
+                            </when>
+                            <otherwise id="_otherwise1">
+                                <setHeader headerName="CamelHttpMethod" id="_setHeader5">
+                                    <constant>GET</constant>
+                                </setHeader>
+                                <setHeader headerName="CamelHttpQuery" id="_setHeader6">
+                                    <simple>report_id=${headers.report_id}&amp;record_type=${headers.report_type}</simple>
+                                </setHeader>
+                                <choice id="_choice4">
+                                    <when id="_when1">
+                                    <simple>${headers.is_legacy} == 'yes'</simple>
+                                    <inOut id="_inout1" uri="cxfrs://bean://rsClientCNLegacy"/>
+                                    </when>
+                                    <otherwise id="_otherwise5">
+                                    <inOut id="_inout1" uri="cxfrs://bean://rsClientCN"/>
+                                    </otherwise>
+                                </choice>
+                            </otherwise>
+                        </choice>
+                        <choice id="_choice3">
+                            <when id="_when2">
+                                <simple>${headers.CamelHttpResponseCode} == '200'</simple>
+                                <unmarshal id="_unmarshal1">
+                                    <json id="jack2" library="Jackson" unmarshalTypeName="mil.navy.safecen.solr.support.model.SolrDataBean"/>
+                                </unmarshal>
+                                <inOut id="_inout2" uri="bean:docAddProcessor"/>
+                                <setHeader headerName="CamelHttpMethod" id="_setHeader7">
+                                    <constant>POST</constant>
+                                </setHeader>
+                                <inOut id="_inout3" uri="cxfrs://bean://rsSolrClient"/>
+                                <setBody id="_setBody4">
+                                    <constant>DELETE FROM SUD_USER_WORKSPACE_MONITOR WHERE PK_USER_WORKSPACE_MONITOR = :?record_id</constant>
+                                </setBody>
+                            </when>
+                            <otherwise id="_otherwise2">
+                                <setBody id="_setBody5">
+                                    <constant>UPDATE SUD_USER_WORKSPACE_MONITOR SET status = 'E' where PK_USER_WORKSPACE_MONITOR = :?record_id</constant>
+                                </setBody>
+                            </otherwise>
+                        </choice>
+                    </when>
+                    <otherwise id="_otherwise3">
+                        <inOut id="_inout2" uri="bean:docDelProcessor"/>
+                        <inOut id="_inout3" uri="cxfrs://bean://rsSolrClient"/>
+                        <choice id="_choice1">
+                            <when id="_when2">
+                                <simple>${headers.CamelHttpResponseCode} == '200'</simple>
+                                <setBody id="_setBody4">
+                                    <constant>DELETE FROM SUD_USER_WORKSPACE_MONITOR WHERE PK_USER_WORKSPACE_MONITOR = :?record_id</constant>
+                                </setBody>
+                            </when>
+                            <otherwise id="_otherwise4">
+                                <setBody id="_setBody4">
+                                    <constant>UPDATE SUD_USER_WORKSPACE_MONITOR SET status = 'E' where PK_USER_WORKSPACE_MONITOR = :?record_id</constant>
+                                </setBody>
+                            </otherwise>
+                        </choice>
+                    </otherwise>
+                </choice>
+                <to id="_jdbc3" uri="jdbc:myTargetDataSource?useHeadersAsParameters=true"/>
+            </split>
+        </route>
+    </camelContext>
+</beans>
