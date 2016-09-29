@@ -155,6 +155,12 @@
     	<artifactId>hermes-client</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+    	<groupId>org.apache.camel</groupId>
+    	<artifactId>camel-test-blueprint</artifactId>
+    	<version>${camel.version}</version>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
